@@ -9,6 +9,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import javafx.collections.ObservableList;
@@ -18,14 +21,18 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
@@ -33,7 +40,9 @@ import javafx.stage.Stage;
 
 public class MainController implements Initializable{
 	@FXML 
-	private Button btnAddProduct,btnProdSave,btnProdCancel;
+	private Button btnAddFunction,btnProdSave,btnProdCancel;
+	@FXML
+	private ScrollPane scrollPaneProduct,scrollPaneCashier;
 	@FXML
 	private ImageView btnAddProdX,btnAddCashierX,btnAddCreditorX;
 	@FXML
@@ -57,13 +66,22 @@ public class MainController implements Initializable{
     @FXML 
     private TableColumn<Product, String>descriptionColumn;
 	@FXML 
-	private TextField txtProdName,txtProdCost,txtProdPrice,txtProdStocks,txtProdSupplier;
+	private TextField txtProdName,txtProdCost,txtProdPrice,txtProdStocks,txtProdSupplier,txtCashierFn,txtCashierLn,txtCashierAddress,txtCashierContactNo,txtCashierUname;
+	@FXML
+	private ComboBox cbboxCashierGender;
+	@FXML
+	private PasswordField txtCashierPw, txtCashierPw2;
 	@FXML
 	private DatePicker txtProdDateOfPurchase;
 	@FXML
 	private TextArea txtProdDescription;
 	@FXML
 	private Label txtSaveMsg;
+	@FXML
+	private HBox btnProducts,btnCashiers;
+	LinkedList<ScrollPane> scrollPaneLinkedList=new LinkedList<ScrollPane>();
+	LinkedList<String> btnLabelLinkedList=new LinkedList<String>();
+	int windowIndex=0;
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		     nameColumn.setCellValueFactory(new PropertyValueFactory<Product, String>("name"));
@@ -76,9 +94,22 @@ public class MainController implements Initializable{
 		     descriptionColumn.setCellValueFactory(new PropertyValueFactory<Product, String>("description"));
             // below two lines are used for connectivity.
 		    FetchAllData();
-            
-            btnAddProduct.setOnAction((e)->{
-    			addProdPane.setVisible(true);
+		    List<ScrollPane> scrollPaneList = Arrays.asList(scrollPaneProduct, scrollPaneCashier);
+		    scrollPaneLinkedList.addAll(scrollPaneList);
+		    List<String> btnLabelList = Arrays.asList("Add Product", "Add Cashier");
+		    btnLabelLinkedList.addAll(btnLabelList);
+		    btnProducts.setOnMouseClicked((e)->{
+            	viewScrollPane(0);
+            });
+		    btnCashiers.setOnMouseClicked((e)->{
+            	viewScrollPane(1);
+            });
+		    btnAddFunction.setOnAction((e)->{
+		    	if(windowIndex==0) {
+    				addProdPane.setVisible(true);
+    			}else if(windowIndex==1) {
+    				addCashierPane.setVisible(true);
+    			}
     			//showAddProductWindow();
     		});
             txtProdCost.textProperty().addListener((observable, oldValue, newValue) -> {
@@ -137,6 +168,17 @@ public class MainController implements Initializable{
             btnAddCreditorX.setOnMouseClicked((e)->{
     			addCreditorPane.setVisible(false);
             });
+	}
+	void viewScrollPane(int i) {
+		for(int j=0;j<scrollPaneLinkedList.size();j++) {
+			if(j==i) {
+				scrollPaneLinkedList.get(j).setVisible(true);
+			}else {
+				scrollPaneLinkedList.get(j).setVisible(false);
+			}
+			btnAddFunction.setText("+ "+btnLabelLinkedList.get(j));
+			this.windowIndex=i;
+		}
 	}
 	void closeAddProdPane() {
 		addProdPane.setVisible(false);
