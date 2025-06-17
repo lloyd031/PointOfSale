@@ -2,8 +2,10 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TableColumn?>
@@ -98,28 +100,6 @@
                   <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                </padding>
             </HBox>
-            <Separator orientation="VERTICAL" prefHeight="200.0" visible="false" VBox.vgrow="ALWAYS" />
-            <VBox prefWidth="100.0" VBox.vgrow="NEVER">
-               <children>
-                  <HBox alignment="CENTER" spacing="4.0" style="-fx-background-color: #ffffff;">
-                     <padding>
-                        <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
-                     </padding>
-                     <children>
-                        <Label style="-fx-background-color: #4095ff; -fx-background-radius: 10;">
-                           <padding>
-                              <Insets bottom="4.0" left="2.0" right="2.0" top="4.0" />
-                           </padding>
-                        </Label>
-                        <Label prefHeight="43.0" prefWidth="134.0" text="12mm Ribars is out of stocks" textFill="#000000c1" wrapText="true">
-                           <font>
-                              <Font name="Arial Bold" size="12.0" />
-                           </font>
-                        </Label>
-                     </children>
-                  </HBox>
-               </children>
-            </VBox>
             <HBox spacing="8.0">
                <children>
                   <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true">
@@ -127,11 +107,12 @@
                         <Image url="@../../../../Downloads/bell.png" />
                      </image>
                   </ImageView>
-                  <Label prefHeight="17.0" prefWidth="91.0" text="Notifications">
+                  <Label prefHeight="17.0" prefWidth="70.0" text="Notifications">
                      <font>
                         <Font name="Arial Unicode MS" size="12.0" />
                      </font>
                   </Label>
+                  <Separator visible="false" HBox.hgrow="ALWAYS" />
                   <Label style="-fx-background-color: #fe3d3c; -fx-background-radius: 4;" text="2" textFill="WHITE">
                      <font>
                         <Font name="Arial" size="12.0" />
@@ -148,6 +129,34 @@
                   <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                </padding>
             </HBox>
+            <Separator orientation="VERTICAL" prefHeight="200.0" visible="false" VBox.vgrow="ALWAYS" />
+            <HBox spacing="8.0">
+               <children>
+                  <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true">
+                     <image>
+                        <Image url="@../resources/bin.png" />
+                     </image>
+                  </ImageView>
+                  <Label prefHeight="17.0" prefWidth="33.0" text="Trash">
+                     <font>
+                        <Font name="Arial Unicode MS" size="12.0" />
+                     </font>
+                  </Label>
+                  <Separator visible="false" HBox.hgrow="ALWAYS" />
+                  <Label style="-fx-background-color: #4095ff; -fx-background-radius: 4;" text="45" textFill="WHITE">
+                     <font>
+                        <Font name="Arial" size="12.0" />
+                     </font>
+                     <padding>
+                        <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+                     </padding>
+                  </Label>
+               </children>
+               <padding>
+                  <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+               </padding>
+            </HBox>
+            <VBox prefWidth="100.0" VBox.vgrow="NEVER" />
          </children>
          <padding>
             <Insets bottom="8.0" left="8.0" top="16.0" />
@@ -180,7 +189,7 @@
                      </children>
                   </HBox>
                   <Separator />
-                  <Label text="Daily Update" textFill="#000000af" />
+                  <Label text="Daily Report" textFill="#000000af" />
                   <HBox prefHeight="100.0" prefWidth="200.0" spacing="8.0">
                      <children>
                         <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" style="-fx-background-color: #4095ff; -fx-background-radius: 8;" HBox.hgrow="ALWAYS">
@@ -243,7 +252,7 @@
                               <Image url="@../resources/sort.png" />
                            </image>
                         </ImageView>
-                        <TextField HBox.hgrow="ALWAYS">
+                        <TextField focusTraversable="false" HBox.hgrow="ALWAYS">
                            <padding>
                               <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                            </padding>
@@ -253,9 +262,8 @@
                   </HBox>
                   <ScrollPane fitToHeight="true" fitToWidth="true" VBox.vgrow="ALWAYS">
                      <content>
-                        <TableView fx:id="prodTableView" VBox.vgrow="ALWAYS">
+                        <TableView fx:id="prodTableView" focusTraversable="false" VBox.vgrow="ALWAYS">
                           <columns>
-                            <TableColumn editable="false" prefWidth="34.0" sortable="false" />
                             <TableColumn fx:id="nameColumn" editable="false" minWidth="0.0" prefWidth="60.0" sortable="false" text="Name" />
                               <TableColumn fx:id="costColumn" editable="false" minWidth="0.0" prefWidth="55.0" sortable="false" text="Cost" />
                               <TableColumn fx:id="priceColumn" editable="false" minWidth="0.0" prefWidth="53.0" sortable="false" text="Price" />
@@ -332,8 +340,127 @@
                                           <Font size="14.0" />
                                        </font>
                                     </Button>
-                                    <DatePicker fx:id="txtProdDateOfPurchase" layoutX="174.0" layoutY="211.0" prefHeight="37.0" prefWidth="152.0" />
+                                    <DatePicker fx:id="txtProdDateOfPurchase" editable="false" layoutX="174.0" layoutY="211.0" prefHeight="37.0" prefWidth="152.0" />
                                     <ImageView fx:id="btnAddProdX" fitHeight="16.0" fitWidth="16.0" layoutX="307.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@../resources/close%20.png" />
+                                       </image>
+                                    </ImageView>
+                                    <Label fx:id="txtSaveMsg" alignment="CENTER" layoutX="145.0" layoutY="8.0" prefHeight="28.0" prefWidth="58.0" text="Saved" textFill="#10b222" visible="false">
+                                       <font>
+                                          <Font name="Arial Bold" size="12.0" />
+                                       </font>
+                                       <padding>
+                                          <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                                       </padding>
+                                    </Label>
+                                 </children>
+                              </Pane>
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+               </children>
+            </StackPane>
+            <StackPane fx:id="addCashierPane" prefHeight="150.0" prefWidth="200.0" style="-fx-background-color: #000000b0;" visible="false">
+               <children>
+                  <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                     <children>
+                        <VBox alignment="CENTER" prefHeight="447.0" prefWidth="339.0">
+                           <children>
+                              <Pane prefHeight="393.0" prefWidth="342.0" style="-fx-background-color: #ffffff; -fx-background-radius: 10; -fx-border-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 5, 0.5, 0, 1);">
+                                 <children>
+                                    <Label layoutX="39.0" layoutY="14.0" text="Register Cashier">
+                                       <font>
+                                          <Font name="Arial Bold" size="14.0" />
+                                       </font>
+                                    </Label>
+                                    <ImageView fitHeight="16.0" fitWidth="16.0" layoutX="14.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@../resources/user.png" />
+                                       </image>
+                                    </ImageView>
+                                    <Label layoutX="14.0" layoutY="49.0" text="Firstname :" />
+                                    <Separator layoutX="12.0" layoutY="43.0" prefHeight="0.0" prefWidth="314.0" />
+                                    <TextField layoutX="14.0" layoutY="73.0" prefHeight="37.0" prefWidth="152.0" />
+                                    <Label layoutX="174.0" layoutY="49.0" text="Lastname :" />
+                                    <TextField layoutX="174.0" layoutY="73.0" prefHeight="37.0" prefWidth="152.0" />
+                                    <Label layoutX="13.0" layoutY="118.0" text="Gender :" />
+                                    <Label layoutX="174.0" layoutY="118.0" text="Address :" />
+                                    <TextField layoutX="173.0" layoutY="142.0" prefHeight="37.0" prefWidth="152.0" />
+                                    <Label layoutX="16.0" layoutY="262.0" text="Password :" />
+                                    <Label layoutX="175.0" layoutY="262.0" text="Confirm Password :" />
+                                    <Button layoutX="176.0" layoutY="335.0" mnemonicParsing="false" prefHeight="37.0" prefWidth="152.0" style="-fx-background-color: #3eb649;" text="Save" textFill="WHITE">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Button>
+                                    <Button layoutX="15.0" layoutY="335.0" mnemonicParsing="false" prefHeight="37.0" prefWidth="152.0" style="-fx-background-color: #fe3d3c;" text="Cancel" textFill="WHITE">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Button>
+                                    <PasswordField layoutX="177.0" layoutY="286.0" prefHeight="37.0" prefWidth="149.0" />
+                                    <PasswordField layoutX="16.0" layoutY="286.0" prefHeight="37.0" prefWidth="149.0" />
+                                    <ComboBox layoutX="15.0" layoutY="142.0" prefHeight="37.0" prefWidth="150.0" />
+                                    <Label layoutX="16.0" layoutY="189.0" text="Contact no :" />
+                                    <TextField layoutX="15.0" layoutY="213.0" prefHeight="37.0" prefWidth="152.0" />
+                                    <Label layoutX="175.0" layoutY="189.0" text="Username :" />
+                                    <TextField layoutX="174.0" layoutY="213.0" prefHeight="37.0" prefWidth="152.0" />
+                                    <ImageView fx:id="btnAddCashierX" fitHeight="16.0" fitWidth="16.0" layoutX="313.0" layoutY="22.0" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@../resources/close%20.png" />
+                                       </image>
+                                    </ImageView>
+                                 </children>
+                              </Pane>
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+               </children>
+            </StackPane>
+            <StackPane fx:id="addCreditorPane" prefHeight="150.0" prefWidth="200.0" style="-fx-background-color: #000000b0;" visible="false">
+               <children>
+                  <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                     <children>
+                        <VBox alignment="CENTER" prefHeight="447.0" prefWidth="339.0">
+                           <children>
+                              <Pane prefHeight="268.0" prefWidth="342.0" style="-fx-background-color: #ffffff; -fx-background-radius: 10; -fx-border-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.1), 5, 0.5, 0, 1);">
+                                 <children>
+                                    <Label layoutX="39.0" layoutY="14.0" text="Add Creditor">
+                                       <font>
+                                          <Font name="Arial Bold" size="14.0" />
+                                       </font>
+                                    </Label>
+                                    <ImageView fitHeight="16.0" fitWidth="16.0" layoutX="14.0" layoutY="14.0" pickOnBounds="true" preserveRatio="true">
+                                       <image>
+                                          <Image url="@../resources/new-employee.png" />
+                                       </image>
+                                    </ImageView>
+                                    <Label layoutX="14.0" layoutY="49.0" text="Firstname :" />
+                                    <Separator layoutX="12.0" layoutY="43.0" prefHeight="0.0" prefWidth="314.0" />
+                                    <TextField layoutX="14.0" layoutY="73.0" prefHeight="37.0" prefWidth="152.0" />
+                                    <Label layoutX="174.0" layoutY="49.0" text="Lastname :" />
+                                    <TextField layoutX="174.0" layoutY="73.0" prefHeight="37.0" prefWidth="152.0" />
+                                    <Label layoutX="13.0" layoutY="118.0" text="Gender :" />
+                                    <Label layoutX="174.0" layoutY="118.0" text="Address :" />
+                                    <TextField layoutX="173.0" layoutY="142.0" prefHeight="37.0" prefWidth="152.0" />
+                                    <Label layoutX="15.0" layoutY="187.0" text="Contact no :" />
+                                    <Button layoutX="253.0" layoutY="211.0" mnemonicParsing="false" prefHeight="37.0" prefWidth="72.0" style="-fx-background-color: #3eb649;" text="Save" textFill="WHITE">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Button>
+                                    <Button layoutX="175.0" layoutY="211.0" mnemonicParsing="false" prefHeight="37.0" prefWidth="72.0" style="-fx-background-color: #fe3d3c;" text="Cancel" textFill="WHITE">
+                                       <font>
+                                          <Font size="14.0" />
+                                       </font>
+                                    </Button>
+                                    <ComboBox layoutX="15.0" layoutY="141.0" prefHeight="37.0" prefWidth="150.0" />
+                                    <Separator layoutX="174.0" layoutY="196.0" prefHeight="3.0" prefWidth="150.0" />
+                                    <TextField layoutX="14.0" layoutY="211.0" prefHeight="37.0" prefWidth="152.0" />
+                                    <ImageView fx:id="btnAddCreditorX" fitHeight="16.0" fitWidth="16.0" layoutX="314.0" layoutY="7.0" pickOnBounds="true" preserveRatio="true">
                                        <image>
                                           <Image url="@../resources/close%20.png" />
                                        </image>

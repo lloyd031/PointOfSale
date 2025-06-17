@@ -19,6 +19,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
@@ -61,6 +62,8 @@ public class MainController implements Initializable{
 	private DatePicker txtProdDateOfPurchase;
 	@FXML
 	private TextArea txtProdDescription;
+	@FXML
+	private Label txtSaveMsg;
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		     nameColumn.setCellValueFactory(new PropertyValueFactory<Product, String>("name"));
@@ -78,6 +81,21 @@ public class MainController implements Initializable{
     			addProdPane.setVisible(true);
     			//showAddProductWindow();
     		});
+            txtProdCost.textProperty().addListener((observable, oldValue, newValue) -> {
+                if (!newValue.matches("-?\\d*(\\.\\d*)?")) {
+                	txtProdCost.setText(oldValue);
+                }
+            });
+            txtProdPrice.textProperty().addListener((observable, oldValue, newValue) -> {
+                if (!newValue.matches("-?\\d*(\\.\\d*)?")) {
+                	txtProdPrice.setText(oldValue);
+                }
+            });
+            txtProdStocks.textProperty().addListener((observable, oldValue, newValue) -> {
+                if (!newValue.matches("-?\\d*(\\.\\d*)?")) {
+                	txtProdStocks.setText(oldValue);
+                }
+            });
             btnProdSave.setOnAction((e)->{
             	if(txtProdName.getText().equals("")) {
             		txtProdName.setStyle("-fx-border-color:  #fe3d3c; -fx-border-radius: 5; ");
@@ -94,24 +112,35 @@ public class MainController implements Initializable{
             		txtProdDateOfPurchase.setStyle("-fx-border-color:  #fe3d3c; -fx-border-radius: 5; ");
             	}else {
             		addProductToDB();
+            		txtProdName.setText("");
+            		txtProdCost.setText("");
+            		txtProdPrice.setText("");
+            		txtProdStocks.setText("");
+            		txtProdSupplier.setText("");
+            		txtProdDateOfPurchase.setValue(null);
+            		txtProdDescription.setText("");
+            		txtSaveMsg.setVisible(true);
                 	FetchAllData();
             	}
             	
             });
         
             btnAddProdX.setOnMouseClicked((e)->{
-    			addProdPane.setVisible(false);
+            	closeAddProdPane();
     		});
-		/**
-		 * 
-		
-		btnAddCashierX.setOnMouseClicked((e)->{
-			addCashierPane.setVisible(false);
-		});
-		btnAddCreditorX.setOnMouseClicked((e)->{
-			addCreditorPane.setVisible(false);
-		});
-		 */
+            btnProdCancel.setOnMouseClicked((e)->{
+            	closeAddProdPane();
+    		});
+            btnAddCashierX.setOnMouseClicked((e)->{
+    			addCashierPane.setVisible(false);
+    		});
+            btnAddCreditorX.setOnMouseClicked((e)->{
+    			addCreditorPane.setVisible(false);
+            });
+	}
+	void closeAddProdPane() {
+		addProdPane.setVisible(false);
+		txtSaveMsg.setVisible(false);
 	}
 	void FetchAllData() {
 		prodTableView.getItems().clear();
