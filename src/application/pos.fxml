@@ -66,7 +66,7 @@
                   <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                </padding>
             </HBox>
-            <HBox spacing="8.0">
+            <HBox fx:id="btnCreditors" spacing="8.0">
                <children>
                   <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true">
                      <image>
@@ -283,14 +283,31 @@
                         </ScrollPane>
                         <ScrollPane fx:id="scrollPaneCashier" fitToHeight="true" fitToWidth="true" focusTraversable="false" visible="false">
                            <content>
-                              <TableView fx:id="prodTableView1" focusTraversable="false" VBox.vgrow="ALWAYS">
+                              <TableView fx:id="cashierTableView" focusTraversable="false" VBox.vgrow="ALWAYS">
                                  <columns>
-                                    <TableColumn fx:id="nameColumn1" editable="false" minWidth="0.0" prefWidth="60.0" sortable="false" text="Firsname" />
-                                    <TableColumn fx:id="costColumn1" editable="false" minWidth="0.0" prefWidth="55.0" sortable="false" text="Lastname" />
-                                    <TableColumn fx:id="priceColumn1" editable="false" minWidth="0.0" prefWidth="53.0" sortable="false" text="Sales" />
-                                    <TableColumn fx:id="stocksColumn1" editable="false" minWidth="0.0" prefWidth="47.0" sortable="false" text="Contact no" />
-                                    <TableColumn fx:id="salesColumn1" editable="false" minWidth="0.0" prefWidth="52.0" sortable="false" text="Address" />
-                                    <TableColumn fx:id="supplierColumn1" editable="false" minWidth="0.0" prefWidth="59.0" sortable="false" text="Username" />
+                                    <TableColumn fx:id="fnColumn" editable="false" minWidth="0.0" prefWidth="60.0" sortable="false" text="Firsname" />
+                                    <TableColumn fx:id="lnColumn" editable="false" minWidth="0.0" prefWidth="55.0" sortable="false" text="Lastname" />
+                                    <TableColumn fx:id="salesCashierColumn" editable="false" minWidth="0.0" prefWidth="53.0" sortable="false" text="Sales" />
+                                    <TableColumn fx:id="genderColumn" prefWidth="75.0" text="Gender" />
+                                    <TableColumn fx:id="contactNumberCashierColumn" editable="false" minWidth="0.0" prefWidth="47.0" sortable="false" text="Contact no" />
+                                    <TableColumn fx:id="addressCashierColumn" editable="false" minWidth="0.0" prefWidth="52.0" sortable="false" text="Address" />
+                                    <TableColumn fx:id="unameColumn" editable="false" minWidth="0.0" prefWidth="59.0" sortable="false" text="Username" />
+                                 </columns>
+                                 <columnResizePolicy>
+                                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                 </columnResizePolicy>
+                              </TableView>
+                           </content>
+                        </ScrollPane>
+                        <ScrollPane fx:id="scrollPaneCreditor" fitToHeight="true" fitToWidth="true" focusTraversable="false" visible="false">
+                           <content>
+                              <TableView fx:id="creditorTableView" focusTraversable="false" VBox.vgrow="ALWAYS">
+                                 <columns>
+                                    <TableColumn fx:id="fnColumnCreditor" editable="false" minWidth="0.0" prefWidth="60.0" sortable="false" text="Firsname" />
+                                    <TableColumn fx:id="lnColumnCreditor" editable="false" minWidth="0.0" prefWidth="55.0" sortable="false" text="Lastname" />
+                                    <TableColumn fx:id="genderColumnCreditor" prefWidth="75.0" text="Gender" />
+                                    <TableColumn fx:id="contactNumberCreditorColumn" editable="false" minWidth="0.0" prefWidth="47.0" sortable="false" text="Contact no" />
+                                    <TableColumn fx:id="addressCreditorColumn" editable="false" minWidth="0.0" prefWidth="52.0" sortable="false" text="Address" />
                                  </columns>
                                  <columnResizePolicy>
                                     <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
@@ -383,7 +400,7 @@
                   </HBox>
                </children>
             </StackPane>
-            <StackPane fx:id="addCashierPane" prefHeight="150.0" prefWidth="200.0" style="-fx-background-color: #000000b0;">
+            <StackPane fx:id="addCashierPane" prefHeight="150.0" prefWidth="200.0" style="-fx-background-color: #000000b0;" visible="false">
                <children>
                   <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                      <children>
@@ -461,14 +478,14 @@
                                     </ImageView>
                                     <Label layoutX="14.0" layoutY="49.0" text="Firstname :" />
                                     <Separator layoutX="12.0" layoutY="43.0" prefHeight="0.0" prefWidth="314.0" />
-                                    <TextField layoutX="14.0" layoutY="73.0" prefHeight="37.0" prefWidth="152.0" />
+                                    <TextField fx:id="txtCreditorFn" layoutX="14.0" layoutY="73.0" prefHeight="37.0" prefWidth="152.0" />
                                     <Label layoutX="174.0" layoutY="49.0" text="Lastname :" />
-                                    <TextField layoutX="174.0" layoutY="73.0" prefHeight="37.0" prefWidth="152.0" />
+                                    <TextField fx:id="txtCreditorLn" layoutX="174.0" layoutY="73.0" prefHeight="37.0" prefWidth="152.0" />
                                     <Label layoutX="13.0" layoutY="118.0" text="Gender :" />
                                     <Label layoutX="174.0" layoutY="118.0" text="Address :" />
-                                    <TextField layoutX="173.0" layoutY="142.0" prefHeight="37.0" prefWidth="152.0" />
+                                    <TextField fx:id="txtCreditorAddress" layoutX="173.0" layoutY="142.0" prefHeight="37.0" prefWidth="152.0" />
                                     <Label layoutX="15.0" layoutY="187.0" text="Contact no :" />
-                                    <Button layoutX="253.0" layoutY="211.0" mnemonicParsing="false" prefHeight="37.0" prefWidth="72.0" style="-fx-background-color: #3eb649;" text="Save" textFill="WHITE">
+                                    <Button fx:id="btnCreditorSave" layoutX="253.0" layoutY="211.0" mnemonicParsing="false" prefHeight="37.0" prefWidth="72.0" style="-fx-background-color: #3eb649;" text="Save" textFill="WHITE">
                                        <font>
                                           <Font size="14.0" />
                                        </font>
@@ -478,9 +495,9 @@
                                           <Font size="14.0" />
                                        </font>
                                     </Button>
-                                    <ComboBox layoutX="15.0" layoutY="141.0" prefHeight="37.0" prefWidth="150.0" />
+                                    <ComboBox fx:id="cbboxCreditorGender" layoutX="15.0" layoutY="141.0" prefHeight="37.0" prefWidth="150.0" />
                                     <Separator layoutX="174.0" layoutY="196.0" prefHeight="3.0" prefWidth="150.0" />
-                                    <TextField layoutX="14.0" layoutY="211.0" prefHeight="37.0" prefWidth="152.0" />
+                                    <TextField fx:id="txtCreditorContactNumber" layoutX="14.0" layoutY="211.0" prefHeight="37.0" prefWidth="152.0" />
                                     <ImageView fx:id="btnAddCreditorX" fitHeight="16.0" fitWidth="16.0" layoutX="314.0" layoutY="7.0" pickOnBounds="true" preserveRatio="true">
                                        <image>
                                           <Image url="@../resources/close%20.png" />
@@ -492,6 +509,33 @@
                         </VBox>
                      </children>
                   </HBox>
+               </children>
+            </StackPane>
+            <StackPane fx:id="errMsg" prefHeight="150.0" prefWidth="200.0" style="-fx-background-color: #0000001f;" visible="false">
+               <children>
+                  <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0">
+                     <children>
+                        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                           <children>
+                              <Pane prefHeight="200.0" prefWidth="200.0" style="-fx-background-color: white; -fx-background-radius: 4;">
+                                 <children>
+                                    <Label layoutX="8.0" layoutY="6.0" text="Error" textFill="#2f2f2f">
+                                       <font>
+                                          <Font name="Arial Bold" size="13.0" />
+                                       </font>
+                                    </Label>
+                                    <Separator layoutX="8.0" layoutY="29.0" prefHeight="1.0" prefWidth="179.0" />
+                                    <Label layoutX="9.0" layoutY="38.0" text="Password dont match." />
+                                    <Button fx:id="btnErrMsg" layoutX="11.0" layoutY="60.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="177.0" style="-fx-background-color: #3eb649;" text="Okay" textFill="WHITE" />
+                                 </children>
+                                 <padding>
+                                    <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                                 </padding>
+                              </Pane>
+                           </children>
+                        </HBox>
+                     </children>
+                  </VBox>
                </children>
             </StackPane>
          </children>
