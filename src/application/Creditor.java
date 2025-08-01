@@ -2,6 +2,7 @@ package application;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
+import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.image.Image;
@@ -24,24 +25,29 @@ public class Creditor {
 	this.address=address;
 	this.contactNumber=contactNumber;
    }
-   public String getFn() {
+   public HBox getFn() {
 	   
-	   return this.fn;
+	   return gettblData(this.fn);
    }
-   public String getLn() {
-	   return this.ln;
+   public HBox getLn() {
+	   return gettblData(this.ln);
    }
-   public String getGender() {
-	   
-	   return (this.gender==0)?"Male":"Female";
+   public HBox getGender() {
+	   return gettblData((this.gender==0)?"Male":"Female");
    }
-   public String getAddress() {
-	   return this.address;
+   public HBox getAddress() {
+	   return gettblData(this.address);
    }
-   public String getContactNumber() {
-	   return this.contactNumber;
+   public HBox getContactNumber() {
+	   return gettblData(this.contactNumber);
    }
-   
+   public HBox gettblData(String x) {
+	   HBox hbox=new HBox();
+	   Label lbl=new Label(x);
+	   hbox.getChildren().add(lbl);
+	   hbox.setAlignment(Pos.CENTER);
+	   return hbox;
+   }
   
    
    public HBox dataHBox(String record,boolean hasGraph, boolean upOrDown) {
@@ -55,7 +61,7 @@ public class Creditor {
 	   hbox.setPadding(new Insets(6)); 
 	   HBox.setHgrow(separator, Priority.ALWAYS);
 	   hbox.getChildren().addAll(lbl,separator);
-	   if(hasGraph==true) {
+	  if(hasGraph==true) {
 		   ImageView graph=new ImageView();
 		   graph.setFitWidth(16);  // Set the width to 16 pixels
 		   graph.setFitHeight(16);
@@ -63,6 +69,7 @@ public class Creditor {
 		   graph.setImage(image);
 		   hbox.getChildren().add(graph);
 	   }
+	  
 	   
 	   return hbox;
    }

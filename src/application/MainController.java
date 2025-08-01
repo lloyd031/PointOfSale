@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -18,10 +19,12 @@ import java.util.ResourceBundle;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
-import javax.swing.JOptionPane;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -41,9 +44,9 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 
 public class MainController implements Initializable{
@@ -86,7 +89,7 @@ public class MainController implements Initializable{
 	@FXML
 	private TextArea txtProdDescription;
 	@FXML
-	private Label txtSaveMsg;
+	private Label txtSaveMsg,lblOrderNumber,lblEarnings;
 	@FXML
 	private HBox btnProducts,btnCashiers,btnCreditors;
 	LinkedList<ScrollPane> scrollPaneLinkedList=new LinkedList<ScrollPane>();
@@ -94,13 +97,18 @@ public class MainController implements Initializable{
 	LinkedList<String> btnLabelLinkedList=new LinkedList<String>();
 	String gender[] ={ "Male", "Female" };
 	int windowIndex=0;
+	private String today;
+	private String numberOfOrders;
+	private String earnings;
+	
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
+		
 		     nameColumn.setCellValueFactory(new PropertyValueFactory<Product, String>("name"));
 		     costColumn.setCellValueFactory(new PropertyValueFactory<Product, Double>("cost"));
 		     priceColumn.setCellValueFactory(new PropertyValueFactory<Product, Double>("price"));
 		     stocksColumn.setCellValueFactory(new PropertyValueFactory<Product, Integer>("stocks"));
-		     salesColumn.setCellValueFactory(new PropertyValueFactory<Product, Integer>("sales"));
+		     salesColumn.setCellValueFactory(new PropertyValueFactory<Product, Integer>("salesHBox"));
 		     supplierColumn.setCellValueFactory(new PropertyValueFactory<Product, String>("supplier"));
 		     dopColumn.setCellValueFactory(new PropertyValueFactory<Product, String>("dop"));
 		     descriptionColumn.setCellValueFactory(new PropertyValueFactory<Product, String>("description"));
@@ -110,7 +118,7 @@ public class MainController implements Initializable{
 		     addressCashierColumn.setCellValueFactory(new PropertyValueFactory<Cashier, String>("address"));
 		     contactNumberCashierColumn.setCellValueFactory(new PropertyValueFactory<Cashier, String>("contactNumber"));
 		     unameColumn.setCellValueFactory(new PropertyValueFactory<Cashier, String>("uname"));
-		     salesCashierColumn.setCellValueFactory(new PropertyValueFactory<Cashier, Integer>("sales"));
+		     salesCashierColumn.setCellValueFactory(new PropertyValueFactory<Cashier, Integer>("salesHBox"));
 		     genderColumn.setCellValueFactory(new PropertyValueFactory<Cashier, Integer>("gender"));
 		     
 		     fnColumnCreditor.setCellValueFactory(new PropertyValueFactory<Creditor, String>("fn"));
@@ -120,19 +128,50 @@ public class MainController implements Initializable{
 		     genderColumnCreditor.setCellValueFactory(new PropertyValueFactory<Creditor, Integer>("gender"));
             // below two lines are used for connectivity.
 		    fetchAllProductData();
-		    fetchAllCashierData();
-		    fetchAllCreditorData();
+		    this.today= String.valueOf(LocalDate.now());
+		    getOrder();
+	    	lblOrderNumber.setText(this.numberOfOrders);
+		    lblEarnings.setText(this.earnings);
+		    Timeline timeline = new Timeline(new KeyFrame(
+		    		Duration.minutes(3),
+		    	    e -> {
+		    	        Task<Void> task = new Task<>() {
+		    	            @Override
+		    	            protected Void call() throws Exception {
+		    	                getOrder(); 
+		    	                return null;
+		    	            }
+
+		    	            @Override
+		    	            protected void succeeded() {
+		    	                // Safe to update UI here
+		    	                lblOrderNumber.setText(numberOfOrders);
+		    	                lblEarnings.setText(earnings);
+		    	                prodTableView.refresh();
+		    	                cashierTableView.refresh();
+		    	                
+		    	            }
+		    	        };
+		    	        new Thread(task).start();
+		    	    }));
+		    	timeline.setCycleCount(Timeline.INDEFINITE);
+		    	timeline.play();
+		    
+		    
 		    List<ScrollPane> scrollPaneList = Arrays.asList(scrollPaneProduct, scrollPaneCashier,scrollPaneCreditor);
 		    scrollPaneLinkedList.addAll(scrollPaneList);
 		    List<String> btnLabelList = Arrays.asList("Add Product", "Add Cashier","Add Creditor");
 		    btnLabelLinkedList.addAll(btnLabelList);
 		    btnProducts.setOnMouseClicked((e)->{
+		    	fetchAllProductData();
             	viewScrollPane(0);
             });
 		    btnCashiers.setOnMouseClicked((e)->{
+		    	fetchAllCashierData();
             	viewScrollPane(1);
             });
 		    btnCreditors.setOnMouseClicked((e)->{
+		    	fetchAllCreditorData();
 		    	viewScrollPane(2);
 		    });
 		    btnAddFunction.setOnAction((e)->{
@@ -188,6 +227,7 @@ public class MainController implements Initializable{
             	}
             	
             });
+            
             cbboxCreditorGender.setItems(FXCollections.observableArrayList(gender));
             btnCreditorSave.setOnAction((e)->{
             	if(txtCreditorFn.getText().equals("")) {
@@ -268,6 +308,34 @@ public class MainController implements Initializable{
     			addCreditorPane.setVisible(false);
             });
 	}
+	public void getOrder() {
+		   double earnings=0;
+		   int i=0;
+		   try {
+				Class.forName("com.mysql.cj.jdbc.Driver");
+		        Connection connection=DriverManager.getConnection("jdbc:mysql://localhost:3306/point_of_sale_db","root","");
+		        String query="SELECT * FROM order_table WHERE order_date LIKE ?";
+		        PreparedStatement statement = connection.prepareStatement(query);
+		        statement.setString(1, this.today + "%");
+		        ResultSet res=statement.executeQuery();
+		       
+		        while (res.next()) {
+		        	earnings+=res.getDouble("order_total");
+		        	i++;
+		        }
+		        res.close();
+		        statement.close();
+		        connection.close();
+		    } catch (ClassNotFoundException | SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		   DecimalFormat formatter = new DecimalFormat("#,##0");
+	       String orderNumber = formatter.format(i);
+		   this.numberOfOrders=orderNumber;
+		   String amount=formatter.format(earnings);
+		   this.earnings=amount;
+	   }
 	void viewScrollPane(int i) {
 		for(int j=0;j<scrollPaneLinkedList.size();j++) {
 			if(j==i) {
@@ -293,14 +361,16 @@ public class MainController implements Initializable{
             ResultSet res= statement.executeQuery("SELECT * FROM `product`");
             //statement.executeUpdate("INSERT INTO `product`( `name`, `cost`, `price`, `stocks`, `sales`, `supplier`, `date_of_purchase`, `description`) VALUES ('cement','12','22','100','76','C Manufaturing','6/16/2025','n/a')");
             while (res.next()) {
+            	int id=res.getInt("product_id");
             	String name=res.getString("name");
             	double cost=res.getDouble("cost");
             	double price=res.getDouble("price");
             	int stocks=res.getInt("stocks");
+            	int initialStocks=res.getInt("initial_stocks");
             	String supplier = res.getString("supplier");
             	String dop = res.getString("date_of_purchase");
             	String description = res.getString("description");
-            	Product p=new Product(name,cost,price,stocks,supplier,dop,description);
+            	Product p=new Product(id,name,cost,price,initialStocks,supplier,dop,description);
                 ObservableList<Product> productlist=prodTableView.getItems();
                 productlist.add(p);
                 prodTableView.setItems(productlist);
@@ -426,18 +496,19 @@ public class MainController implements Initializable{
 			System.out.println("connected ");
             Connection connection=DriverManager.getConnection("jdbc:mysql://localhost:3306/point_of_sale_db","root","");
             
-            String query = "INSERT INTO `product` (`name`, `cost`, `price`, `stocks`, `supplier`, `date_of_purchase`, `description`) " + "VALUES (?, ?,  ?, ?, ?, ?, ?)";
+            String query = "INSERT INTO `product` (`name`, `cost`, `price`,`initial_stocks`, `stocks`, `supplier`, `date_of_purchase`, `description`) " + "VALUES (?, ?,  ?, ?, ?, ?, ?,?)";
             PreparedStatement stmt = connection.prepareStatement(query);
             stmt.setString(1, txtProdName.getText());    
             stmt.setDouble(2, Double.parseDouble(txtProdCost.getText()));   
             stmt.setDouble(3, Double.parseDouble(txtProdPrice.getText()));  
-            stmt.setInt(4, Integer.parseInt(txtProdStocks.getText()));   
-            stmt.setString(5, txtProdSupplier.getText());     
+            stmt.setInt(4, Integer.parseInt(txtProdStocks.getText()));  
+            stmt.setInt(5, Integer.parseInt(txtProdStocks.getText()));  
+            stmt.setString(6, txtProdSupplier.getText());     
             LocalDate selectedDate = txtProdDateOfPurchase.getValue();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
             String formattedDate = selectedDate.format(formatter);
-            stmt.setString(6, formattedDate);             
-            stmt.setString(7, txtProdDescription.getText());                     
+            stmt.setString(7, formattedDate);             
+            stmt.setString(8, txtProdDescription.getText());                     
 
             stmt.executeUpdate();
             connection.close();
