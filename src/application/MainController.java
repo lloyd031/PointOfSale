@@ -30,6 +30,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.chart.AreaChart;
+import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
@@ -53,7 +55,7 @@ public class MainController implements Initializable{
 	@FXML 
 	private Button btnAddFunction,btnProdSave,btnProdCancel,btnAddCahier,btnCancelCashier,btnErrMsg,btnCreditorSave;
 	@FXML
-	private ScrollPane scrollPaneProduct,scrollPaneCashier,scrollPaneCreditor;
+	private ScrollPane scrollPaneProduct,scrollPaneCashier,scrollPaneCreditor,scrollPaneAnalytics;
 	@FXML
 	private ImageView btnAddProdX,btnAddCashierX,btnAddCreditorX;
 	@FXML
@@ -89,21 +91,23 @@ public class MainController implements Initializable{
 	@FXML
 	private TextArea txtProdDescription;
 	@FXML
-	private Label txtSaveMsg,lblOrderNumber,lblEarnings;
+	private Label txtSaveMsg,lblOrderNumber,lblEarnings,lbldailyreport,lblMonthlyOrders,lblMonthlyEarnings;
 	@FXML
-	private HBox btnProducts,btnCashiers,btnCreditors;
+	private HBox btnProducts,btnCashiers,btnCreditors,btnAnalytics;
+	@FXML
+	private AreaChart areaChartMonthlyOrders;
 	LinkedList<ScrollPane> scrollPaneLinkedList=new LinkedList<ScrollPane>();
 	
 	LinkedList<String> btnLabelLinkedList=new LinkedList<String>();
 	String gender[] ={ "Male", "Female" };
 	int windowIndex=0;
 	private String today;
-	private String numberOfOrders;
-	private String earnings;
-	
+	Timeline timeline;
+	boolean isDailyReport=true;
+	Order order;
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
-		
+		     
 		     nameColumn.setCellValueFactory(new PropertyValueFactory<Product, String>("name"));
 		     costColumn.setCellValueFactory(new PropertyValueFactory<Product, Double>("cost"));
 		     priceColumn.setCellValueFactory(new PropertyValueFactory<Product, Double>("price"));
@@ -129,48 +133,39 @@ public class MainController implements Initializable{
             // below two lines are used for connectivity.
 		    fetchAllProductData();
 		    this.today= String.valueOf(LocalDate.now());
-		    getOrder();
-	    	lblOrderNumber.setText(this.numberOfOrders);
-		    lblEarnings.setText(this.earnings);
-		    Timeline timeline = new Timeline(new KeyFrame(
-		    		Duration.minutes(3),
-		    	    e -> {
-		    	        Task<Void> task = new Task<>() {
-		    	            @Override
-		    	            protected Void call() throws Exception {
-		    	                getOrder(); 
-		    	                return null;
-		    	            }
-
-		    	            @Override
-		    	            protected void succeeded() {
-		    	                // Safe to update UI here
-		    	                lblOrderNumber.setText(numberOfOrders);
-		    	                lblEarnings.setText(earnings);
-		    	                prodTableView.refresh();
-		    	                cashierTableView.refresh();
-		    	                
-		    	            }
-		    	        };
-		    	        new Thread(task).start();
-		    	    }));
-		    	timeline.setCycleCount(Timeline.INDEFINITE);
-		    	timeline.play();
+		    startTimerUpdate();
 		    
 		    
-		    List<ScrollPane> scrollPaneList = Arrays.asList(scrollPaneProduct, scrollPaneCashier,scrollPaneCreditor);
+		    List<ScrollPane> scrollPaneList = Arrays.asList(scrollPaneProduct, scrollPaneCashier,scrollPaneCreditor,scrollPaneAnalytics);
 		    scrollPaneLinkedList.addAll(scrollPaneList);
 		    List<String> btnLabelList = Arrays.asList("Add Product", "Add Cashier","Add Creditor");
 		    btnLabelLinkedList.addAll(btnLabelList);
 		    btnProducts.setOnMouseClicked((e)->{
+		    	setToDaily();
+		    	timeline.stop();
+		    	this.today= String.valueOf(LocalDate.now());
 		    	fetchAllProductData();
+		    	startTimerUpdate();
             	viewScrollPane(0);
             });
+		    btnAnalytics.setOnMouseClicked((e)->{
+		    	this.isDailyReport=false;
+		    	lbldailyreport.setText("Monthly Report");
+		    	timeline.stop();
+		    	this.today= LocalDate.now().getYear()+"-"+String.format("%02d", LocalDate.now().getMonthValue());
+		    	startTimerUpdate();
+		    	viewScrollPane(3);
+		    });
 		    btnCashiers.setOnMouseClicked((e)->{
+		    	setToDaily();
+		    	timeline.stop();
+		    	this.today= String.valueOf(LocalDate.now());
 		    	fetchAllCashierData();
+		    	startTimerUpdate();
             	viewScrollPane(1);
             });
 		    btnCreditors.setOnMouseClicked((e)->{
+		    	
 		    	fetchAllCreditorData();
 		    	viewScrollPane(2);
 		    });
@@ -307,35 +302,63 @@ public class MainController implements Initializable{
             btnAddCreditorX.setOnMouseClicked((e)->{
     			addCreditorPane.setVisible(false);
             });
+            
 	}
-	public void getOrder() {
-		   double earnings=0;
-		   int i=0;
-		   try {
-				Class.forName("com.mysql.cj.jdbc.Driver");
-		        Connection connection=DriverManager.getConnection("jdbc:mysql://localhost:3306/point_of_sale_db","root","");
-		        String query="SELECT * FROM order_table WHERE order_date LIKE ?";
-		        PreparedStatement statement = connection.prepareStatement(query);
-		        statement.setString(1, this.today + "%");
-		        ResultSet res=statement.executeQuery();
-		       
-		        while (res.next()) {
-		        	earnings+=res.getDouble("order_total");
-		        	i++;
-		        }
-		        res.close();
-		        statement.close();
-		        connection.close();
-		    } catch (ClassNotFoundException | SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		   DecimalFormat formatter = new DecimalFormat("#,##0");
-	       String orderNumber = formatter.format(i);
-		   this.numberOfOrders=orderNumber;
-		   String amount=formatter.format(earnings);
-		   this.earnings=amount;
-	   }
+	public void setToDaily() {
+		lbldailyreport.setText("Daily Report");
+		this.isDailyReport=true;
+	}
+	public void startTimerUpdate() {
+	    order=new Order(this.today);
+	    order.getOrder(this.isDailyReport);
+    	lblOrderNumber.setText(order.getNumberOfOrders());
+    	lblMonthlyOrders.setText(order.getNumberOfOrders());
+        lblMonthlyEarnings.setText("P "+order.getEarnings());
+	    lblEarnings.setText(order.getEarnings());
+	    setChart();
+		timeline = new Timeline(new KeyFrame(
+	    		Duration.minutes(3),
+	    	    e -> {
+	    	        Task<Void> task = new Task<>() {
+	    	            @Override
+	    	            protected Void call() throws Exception {
+	    	            	order=new Order(today);
+	    	                order.getOrder(isDailyReport);
+	    	                return null;
+	    	            }
+
+	    	            @Override
+	    	            protected void succeeded() {
+	    	                // Safe to update UI here
+	    	            	lblOrderNumber.setText(order.getNumberOfOrders());
+	    	            	lblMonthlyOrders.setText(order.getNumberOfOrders());
+	    	                lblMonthlyEarnings.setText("P "+order.getEarnings());
+	    	        	    lblEarnings.setText(order.getEarnings());
+	    	                prodTableView.refresh();
+	    	                cashierTableView.refresh();
+	    	                setChart();
+	    	                
+	    	            }
+	    	        };
+	    	        new Thread(task).start();
+	    	    }));
+	    	timeline.setCycleCount(Timeline.INDEFINITE);
+	    	timeline.play();
+	}
+	
+	void setChart() {
+		if(isDailyReport==false) {
+        	areaChartMonthlyOrders.getData().clear();
+        	LinkedList<Integer> timeline=order.getOrderTimeline();
+        	XYChart.Series series=new XYChart.Series();
+            for(int j=0; j<32; j++) {
+            	series.getData().add(new XYChart.Data(j,timeline.get(j)));
+            }
+            
+            areaChartMonthlyOrders.getData().add(series);
+            areaChartMonthlyOrders.setLegendVisible(false);
+        }
+	}
 	void viewScrollPane(int i) {
 		for(int j=0;j<scrollPaneLinkedList.size();j++) {
 			if(j==i) {
@@ -343,7 +366,12 @@ public class MainController implements Initializable{
 			}else {
 				scrollPaneLinkedList.get(j).setVisible(false);
 			}
-			btnAddFunction.setText("+ "+btnLabelLinkedList.get(i));
+			if(i<3) {
+				btnAddFunction.setVisible(true);
+				btnAddFunction.setText("+ "+btnLabelLinkedList.get(i));
+			}else {
+				btnAddFunction.setVisible(false);
+			}
 			this.windowIndex=i;
 		}
 	}

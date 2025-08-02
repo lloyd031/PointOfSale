@@ -125,7 +125,6 @@ public class Product {
 		}
 	  
    }
-   
    public HBox getCost() {
 	   DecimalFormat formatter = new DecimalFormat("#,##0.00");
        String cost = formatter.format(this.cost);
