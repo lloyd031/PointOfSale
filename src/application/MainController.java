@@ -21,6 +21,7 @@ import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
 import javafx.animation.KeyFrame;
+import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -28,9 +29,12 @@ import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.chart.AreaChart;
+import javafx.scene.chart.BarChart;
+import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -43,6 +47,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -91,11 +96,13 @@ public class MainController implements Initializable{
 	@FXML
 	private TextArea txtProdDescription;
 	@FXML
-	private Label txtSaveMsg,lblOrderNumber,lblEarnings,lbldailyreport,lblMonthlyOrders,lblMonthlyEarnings;
+	private Label txtSaveMsg,lblOrderNumber,lblEarnings,lbldailyreport,lblMonthlyOrders,lblMonthlyEarnings,lblEarningInsight;
 	@FXML
 	private HBox btnProducts,btnCashiers,btnCreditors,btnAnalytics;
 	@FXML
-	private AreaChart areaChartMonthlyOrders;
+	private AreaChart areaChartMonthlyOrders,areaChartMonthlyEarning;
+	@FXML
+	private LineChart lineChartLastYear;
 	LinkedList<ScrollPane> scrollPaneLinkedList=new LinkedList<ScrollPane>();
 	
 	LinkedList<String> btnLabelLinkedList=new LinkedList<String>();
@@ -105,6 +112,7 @@ public class MainController implements Initializable{
 	Timeline timeline;
 	boolean isDailyReport=true;
 	Order order;
+	DecimalFormat formatter = new DecimalFormat("#,##0");
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		     
@@ -310,32 +318,28 @@ public class MainController implements Initializable{
 	}
 	public void startTimerUpdate() {
 	    order=new Order(this.today);
-	    order.getOrder(this.isDailyReport);
-    	lblOrderNumber.setText(order.getNumberOfOrders());
-    	lblMonthlyOrders.setText(order.getNumberOfOrders());
-        lblMonthlyEarnings.setText("P "+order.getEarnings());
-	    lblEarnings.setText(order.getEarnings());
+	    order.getOrder();
+	    reflectAnalytics();
 	    setChart();
 		timeline = new Timeline(new KeyFrame(
-	    		Duration.minutes(3),
+	    		Duration.minutes(10),
 	    	    e -> {
 	    	        Task<Void> task = new Task<>() {
 	    	            @Override
 	    	            protected Void call() throws Exception {
 	    	            	order=new Order(today);
-	    	                order.getOrder(isDailyReport);
+	    	                order.getOrder();
+	    	                
 	    	                return null;
 	    	            }
 
 	    	            @Override
 	    	            protected void succeeded() {
 	    	                // Safe to update UI here
-	    	            	lblOrderNumber.setText(order.getNumberOfOrders());
-	    	            	lblMonthlyOrders.setText(order.getNumberOfOrders());
-	    	                lblMonthlyEarnings.setText("P "+order.getEarnings());
-	    	        	    lblEarnings.setText(order.getEarnings());
-	    	                prodTableView.refresh();
+	    	            	reflectAnalytics();
+	    	        	    prodTableView.refresh();
 	    	                cashierTableView.refresh();
+	    	                
 	    	                setChart();
 	    	                
 	    	            }
@@ -345,19 +349,121 @@ public class MainController implements Initializable{
 	    	timeline.setCycleCount(Timeline.INDEFINITE);
 	    	timeline.play();
 	}
-	
+	 void reflectAnalytics() {
+		lblOrderNumber.setText(order.getNumberOfOrders());
+    	lblMonthlyOrders.setText(order.getNumberOfOrders());
+        lblMonthlyEarnings.setText("P "+formatter.format(order.getEarnings()));
+	    lblEarnings.setText("P "+formatter.format(order.getEarnings()));
+	    
+	    
+        
+	}
 	void setChart() {
 		if(isDailyReport==false) {
-        	areaChartMonthlyOrders.getData().clear();
-        	LinkedList<Integer> timeline=order.getOrderTimeline();
-        	XYChart.Series series=new XYChart.Series();
-            for(int j=0; j<32; j++) {
-            	series.getData().add(new XYChart.Data(j,timeline.get(j)));
-            }
+			areaChartMonthlyOrders.getData().clear();
+			areaChartMonthlyEarning.getData().clear();
+			lineChartLastYear.getData().clear();
+
+			LinkedList<Integer> timeline = order.getOrderTimeline();
+			LinkedList<Integer> timeline2 = order.getOrderTimeline2();
+			LinkedList<Object[]> earningTimeline = order.getEarningTimeline();
+			LinkedList<Object[]> earningTimeline2 = order.getEarningTimeline2();
+			LinkedList<Object[]> earningTimeline3 = order.getEarningTimeline3();
+        
+			XYChart.Series<Number, Number> orderSeries = new XYChart.Series<>();
+			orderSeries.setName("This Month");
+			XYChart.Series<Number, Number> orderSeries2 = new XYChart.Series<>();
+			orderSeries2.setName("Last Month");
+			XYChart.Series<Number, Number> earningSeries = new XYChart.Series<>();
+			earningSeries.setName("This Month");
+			XYChart.Series<Number, Number> earningSeries2 = new XYChart.Series<>();
+			earningSeries2.setName("Last Month");
+			XYChart.Series<Number, Number> earningSeries3 = new XYChart.Series<>();
+			earningSeries3.setName("The same month last year");
+			for (int j = 0; j < 32; j++) {
+			    XYChart.Data<Number, Number> orderData = new XYChart.Data<>(j, timeline.get(j));
+			    XYChart.Data<Number, Number> orderData2 = new XYChart.Data<>(j, timeline2.get(j));
+			    XYChart.Data<Number, Number> earningData = new XYChart.Data<>(j, (Number) earningTimeline.get(j)[0]);
+			    XYChart.Data<Number, Number> earningData2 = new XYChart.Data<>(j, (Number) earningTimeline2.get(j)[0]);
+			    XYChart.Data<Number, Number> earningData3 = new XYChart.Data<>(j, (Number) earningTimeline3.get(j)[0]);
+			    
+			    orderSeries.getData().add(orderData);
+			    orderSeries2.getData().add(orderData2);
+			    earningSeries.getData().add(earningData);
+			    earningSeries2.getData().add(earningData2);
+			    earningSeries3.getData().add(earningData3);
+			}
+
+			areaChartMonthlyEarning.setLegendVisible(true);
+			areaChartMonthlyOrders.setLegendVisible(true);
+			XYChart.Series<Number, Number> earningSeriesClone =cloneSeries(earningSeries);
+			areaChartMonthlyEarning.getData().addAll(earningSeries2,earningSeries);
+			areaChartMonthlyOrders.getData().addAll(orderSeries2,orderSeries);
+			lineChartLastYear.getData().addAll(earningSeries3,earningSeriesClone);
+			
+			setOrderNode(orderSeries,"This month");
+			setOrderNode(orderSeries2,"Last month");
+			double earnings=order.getEarnings();
+			double earnings2=order.getEarnings2();
+			setEarningNode(earningSeries,"This month");
+			
+			setEarningNode(earningSeries2,"Last month");
+			setEarningNode(earningSeries3,"The same month last year");
+			setEarningNode(earningSeriesClone,"This months");
+			lblEarningInsight.setText("Earnings "+((earnings2>earnings)?"dropped":"increased") + " by "+String.format("%.2f", (earnings-earnings2)/earnings2*100)+"% this month compared to last month.");
+			
             
-            areaChartMonthlyOrders.getData().add(series);
-            areaChartMonthlyOrders.setLegendVisible(false);
         }
+	}
+	public  XYChart.Series<Number, Number> cloneSeries(XYChart.Series<Number, Number> original) {
+	    XYChart.Series<Number, Number> clone = new XYChart.Series<>();
+	    clone.setName(original.getName()); 
+
+	    for (XYChart.Data<Number, Number> data : original.getData()) {
+	        clone.getData().add(new XYChart.Data<>(data.getXValue(), data.getYValue()));
+	    }
+
+	    return clone;
+	}
+	public void setEarningNode(XYChart.Series<Number, Number> series, String month) {
+		for (XYChart.Data<Number, Number> data : series.getData()) {
+		    Node node = data.getNode();
+		    node.setStyle("-fx-background-color:rgba(0,0,0,0); -fx-background-radius: 4px; -fx-padding: 10px;");
+		    if (node != null) {
+		    	int day = data.getXValue().intValue();
+	            Number earnings = data.getYValue();
+	            Tooltip tooltip =new Tooltip(month + "\nDay: " + day + "\nEarnings: ₱" + earnings);
+	            Tooltip.install(node,tooltip);
+	            tooltip.setStyle("-fx-background-color: white; -fx-text-fill: black; -fx-font-size: 12px;");
+		        node.setOnMouseClicked(event -> {
+		        	 tooltip.show(node, event.getScreenX(), event.getScreenY()); 
+			            PauseTransition delay = new PauseTransition(Duration.seconds(2));
+			            delay.setOnFinished(e -> tooltip.hide());
+			            delay.play();
+		        });
+		    }
+		}
+	}
+	public void setOrderNode(XYChart.Series<Number, Number> series, String month) {
+		for (XYChart.Data<Number, Number> data : series.getData()) {
+		    Node node = data.getNode();
+		    node.setStyle("-fx-background-color:rgba(0,0,0,0); -fx-background-radius: 4px; -fx-padding: 10px;");
+		    if (node != null) {
+		    	int day = data.getXValue().intValue();
+	            int orders = data.getYValue().intValue();
+	            
+	            Tooltip tooltip = new Tooltip(month + "\nDay: " + day + "\nOrders: " + orders);
+	            Tooltip.install(node, tooltip);
+	            tooltip.setStyle("-fx-background-color: white; -fx-text-fill: black; -fx-font-size: 12px;");
+		        node.setOnMouseClicked(event -> {
+		            
+		            tooltip.show(node, event.getScreenX(), event.getScreenY()); 
+		            PauseTransition delay = new PauseTransition(Duration.seconds(2));
+		            delay.setOnFinished(e -> tooltip.hide());
+		            delay.play();
+		        });
+		    }
+		}
 	}
 	void viewScrollPane(int i) {
 		for(int j=0;j<scrollPaneLinkedList.size();j++) {
